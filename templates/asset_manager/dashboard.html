@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %}Asset Manager Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>🧰 Asset Management Dashboard</h1>
+        <p class="page-subtitle">Track and manage hospital assets in real-time</p>
+    </header>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-content">
+                <h3>{{ assets|length }}</h3>
+                <p>Total Assets</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📥</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_files }}</h3>
+                <p>Files Received</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optical Zones -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>💡 Optical Availability Zones</h2>
+            <a href="{{ url_for('asset_manager_activate_zone') }}" class="btn btn-primary">⚙️ Manage Zones</a>
+        </div>
+        <div class="panel-body">
+            <div class="optical-map">
+                {% for zone in optical_zones %}
+                <div class="optical-zone {% if zone.status == 'active' %}active{% else %}inactive{% endif %}"
+                    style="border-color: {{ zone.name|zone_color }};">
+                    <div class="zone-header" style="background: {{ zone.name|zone_color }}20;">
+                        <span class="zone-name">{{ zone.name }}</span>
+                        <span class="zone-status {{ zone.status }}">{{ zone.status|replace('_', ' ')|title }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Assets -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📦 Hospital Assets</h2>
+        </div>
+        <div class="panel-body">
+            {% if assets %}
+            <div class="asset-grid">
+                {% for asset in assets %}
+                <div class="asset-card">
+                    <div class="asset-icon">📦</div>
+                    <h4>{{ asset.name or 'Asset ' ~ asset.doc_id }}</h4>
+                    <p class="asset-location">{{ asset.location or 'Unassigned' }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-data">No assets found</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

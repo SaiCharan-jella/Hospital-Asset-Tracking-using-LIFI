@@ -1,0 +1,179 @@
+{% extends "layout.html" %}
+
+{% block title %}User & Asset Manager Control{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>👥 User & Asset Manager Control</h1>
+        <p class="page-subtitle">Approve accounts and manage permissions</p>
+    </header>
+
+    <!-- Pending Users -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>⏳ Pending User Approvals</h2>
+            <p>{{ pending_users|length }} accounts awaiting approval</p>
+        </div>
+        <div class="panel-body">
+            {% if pending_users %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in pending_users %}
+                        <tr>
+                            <td><strong>{{ user.username }}</strong></td>
+                            <td>{{ user.email or 'N/A' }}</td>
+                            <td><span class="badge {{ user.role }}">{{ user.role|role_display }}</span></td>
+                            <td>{{ user.created_at|format_timestamp }}</td>
+                            <td>
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="username" value="{{ user.username }}">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success">✓ Approve</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No pending user approvals</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- All Users Management -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔐 User Access Management</h2>
+            <p>Manage shared secret permissions and user access</p>
+        </div>
+        <div class="panel-body">
+            {% if all_users %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Shared Secret Access</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_users %}
+                        <tr>
+                            <td><strong>{{ user.username }}</strong></td>
+                            <td><span class="badge {{ user.role }}">{{ user.role|role_display }}</span></td>
+                            <td>
+                                {% if user.approved %}
+                                <span class="status-badge status-success">Approved</span>
+                                {% else %}
+                                <span class="status-badge status-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.shared_secret_access %}
+                                <span class="access-badge granted">✓ Granted</span>
+                                {% else %}
+                                <span class="access-badge denied">✗ Denied</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.last_login|format_timestamp if user.last_login else 'Never' }}</td>
+                            <td>
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="username" value="{{ user.username }}">
+                                    {% if user.shared_secret_access %}
+                                    <input type="hidden" name="action" value="revoke_secret">
+                                    <button type="submit" class="btn btn-sm btn-warning">Revoke Access</button>
+                                    {% else %}
+                                    <input type="hidden" name="action" value="grant_secret">
+                                    <button type="submit" class="btn btn-sm btn-primary">Grant Access</button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No users found</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Permission Matrix -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📊 Role Permission Matrix</h2>
+            <p>Overview of role-based access control</p>
+        </div>
+        <div class="panel-body">
+            <div class="permission-matrix">
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Permission</th>
+                            <th>Admin</th>
+                            <th>Asset Manager</th>
+                            <th>User</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>View All Files</td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check no">✗</span></td>
+                            <td><span class="perm-check no">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Decrypt All Files</td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check no">✗</span></td>
+                            <td><span class="perm-check no">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Approve Users</td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check no">✗</span></td>
+                            <td><span class="perm-check no">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Upload Files</td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check yes">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Manage Assets</td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check no">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Validate Handoffs</td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check yes">✓</span></td>
+                            <td><span class="perm-check no">✗</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

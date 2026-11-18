@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block title %}Confidential Data{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>🔒 Shared Confidential Data</h1>
+        <p class="page-subtitle">Exchange encrypted messages securely</p>
+    </header>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📤 Send Encrypted Message</h2>
+        </div>
+        <div class="panel-body">
+            <form method="POST" class="message-form">
+                <div class="form-group">
+                    <label for="to_role">To Role:</label>
+                    <select name="to_role" id="to_role" class="form-control" required>
+                        <option value="admin">Hospital Administrator</option>
+                        <option value="asset_manager">Asset Management Officer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">Confidential Message:</label>
+                    <textarea name="message" id="message" class="form-control" rows="4" required></textarea>
+                </div>
+                <div class="encryption-notice">
+                    <span class="notice-icon">🔐</span>
+                    <div>
+                        <strong>Message will be encrypted</strong>
+                        <p>SHA-256 integrity hash will be generated for verification</p>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">🔒 Encrypt & Send</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📬 Received Encrypted Messages</h2>
+        </div>
+        <div class="panel-body">
+            {% if secrets %}
+            <div class="messages-list">
+                {% for secret in secrets %}
+                <div class="message-card">
+                    <div class="message-header">
+                        <strong>From: {{ secret.from_user or 'System' }}</strong>
+                        <span class="message-time">{{ secret.timestamp|time_ago }}</span>
+                    </div>
+                    <div class="message-body encrypted" id="msg-{{ secret.doc_id }}">
+                        <span class="encrypted-icon">🔒</span>
+                        <span class="encrypted-text">Encrypted Message - Click to decrypt</span>
+                        <button class="btn btn-sm btn-secondary" onclick="decryptMessage({{ secret.doc_id }})">
+                            🔓 Decrypt & Verify
+                        </button>
+                    </div>
+                    <div class="integrity-info">
+                        <small><strong>Integrity Hash:</strong> <code>{{ secret.integrity_hash[:16] }}...</code></small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-data">No messages received</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function decryptMessage(secretId) {
+        fetch(`/decrypt-message/${secretId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const msgDiv = document.getElementById(`msg-${secretId}`);
+                    msgDiv.innerHTML = `
+                    <div class="decrypted-message">
+                        <span class="verified-icon">✓</span>
+                        <strong>Verified & Decrypted:</strong>
+                        <p>${data.message}</p>
+                    </div>
+                `;
+                } else {
+                    msgDiv.innerHTML = `<div class="error-message">❌ ${data.error}</div>`;
+                }
+            });
+    }
+</script>
+{% endblock %}

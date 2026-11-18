@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block title %}LiFi Handoff Logs{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>📋 Handoff Issue Tracking</h1>
+        <p class="page-subtitle">Focusing on pending, unstable, or failed optical handoff sessions requiring attention
+        </p>
+    </header>
+
+    <!-- Log Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-content">
+                <h3>{{ logs|length }}</h3>
+                <p>Unresolved Issues</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">⚠</div>
+            <div class="stat-content">
+                <h3>{{ logs|selectattr('status', 'equalto', 'pending')|list|length }}</h3>
+                <p>Pending Validation</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">⚠</div>
+            <div class="stat-content">
+                <h3>{{ logs|selectattr('status', 'equalto', 'unstable')|list|length }}</h3>
+                <p>Unstable Handoffs</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">✗</div>
+            <div class="stat-content">
+                <h3>{{ logs|selectattr('status', 'in', ['failed', 'file_missing', 'integrity_failed'])|list|length }}
+                </h3>
+                <p>Failed Sessions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Handoff Logs Table -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔄 Unresolved Handoff Sessions</h2>
+            <p>Active sessions requiring monitoring or administrative intervention</p>
+        </div>
+        <div class="panel-body">
+            {% if logs %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Session ID</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Status</th>
+                            <th>Integrity</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="log-row {{ log.status|status_class }}">
+                            <td>
+                                <strong>{{ log.timestamp|format_timestamp }}</strong>
+                                <br>
+                                <small class="text-muted">{{ log.timestamp|time_ago }}</small>
+                            </td>
+                            <td><code>{{ log.session_id }}</code></td>
+                            <td><span class="badge {{ log.from_role }}">{{ log.from_role }}</span></td>
+                            <td><span class="badge {{ log.to_role }}">{{ log.to_role }}</span></td>
+                            <td>
+                                <span class="status-badge {{ log.status|status_class }}">
+                                    {% if log.status == 'stable' %}
+                                    ✓ Stable
+                                    {% elif log.status == 'unstable' %}
+                                    ⚠ Unstable
+                                    {% elif log.status == 'failed' %}
+                                    ✗ Failed
+                                    {% elif log.status == 'file_missing' %}
+                                    ⚠ File Missing
+                                    {% elif log.status == 'integrity_failed' %}
+                                    ✗ Integrity Failed
+                                    {% else %}
+                                    {{ log.status }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if log.integrity_verified %}
+                                <span class="integrity-check verified">✓</span>
+                                {% else %}
+                                <span class="integrity-check failed">✗</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.details or 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No handoff logs available</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Failed Session Detection -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>⚠ Failed Session Detection</h2>
+            <p>Optical handoffs requiring attention or resynchronization</p>
+        </div>
+        <div class="panel-body">
+            {% set failed_logs = logs|selectattr('status', 'in', ['failed', 'unstable', 'file_missing',
+            'integrity_failed'])|list %}
+            {% if failed_logs %}
+            <div class="alert-list">
+                {% for log in failed_logs[:10] %}
+                <div class="alert alert-warning">
+                    <div class="alert-header">
+                        <strong>Session {{ log.session_id }}</strong>
+                        <span class="alert-time">{{ log.timestamp|time_ago }}</span>
+                    </div>
+                    <div class="alert-body">
+                        <p><strong>Status:</strong> {{ log.status }}</p>
+                        <p><strong>Route:</strong> {{ log.from_role }} → {{ log.to_role }}</p>
+                        <p><strong>Details:</strong> {{ log.details or 'No additional details' }}</p>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="btn btn-sm btn-primary">🔄 Resynchronize</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="success-message">
+                <span class="success-icon">✓</span>
+                <p>All optical handoff sessions are stable. No failed sessions detected.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

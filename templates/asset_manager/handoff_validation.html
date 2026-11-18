@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}Handoff Validation{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>✓ Optical Handoff Validation</h1>
+        <p class="page-subtitle">Validate and complete pending LiFi handoff sessions</p>
+    </header>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔄 Pending Handoff Sessions</h2>
+            <p>Sessions awaiting manual integrity validation</p>
+        </div>
+        <div class="panel-body">
+            {% if sessions %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Session ID</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in sessions %}
+                        <tr>
+                            <td><code>{{ session.session_id }}</code></td>
+                            <td><span class="badge {{ session.from_role }}">{{ session.from_role }}</span></td>
+                            <td><span class="badge {{ session.to_role }}">{{ session.to_role }}</span></td>
+                            <td><span class="status-badge {{ session.status|status_class }}">Pending Validation</span>
+                            </td>
+                            <td>{{ session.timestamp|time_ago }}</td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <form method="POST" style="display: inline;">
+                                        <input type="hidden" name="session_id" value="{{ session.session_id }}">
+                                        <input type="hidden" name="action" value="approve">
+                                        <button type="submit" class="btn btn-sm btn-success">✓ Validate &
+                                            Complete</button>
+                                    </form>
+                                    <form method="POST" style="display: inline;">
+                                        <input type="hidden" name="session_id" value="{{ session.session_id }}">
+                                        <input type="hidden" name="action" value="reject">
+                                        <button type="submit" class="btn btn-sm btn-danger">✗ Reject & Mark
+                                            Failed</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="success-message">
+                <span class="success-icon">✓</span>
+                <p>No handoff sessions currently pending validation.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

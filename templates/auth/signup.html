@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block title %}Sign Up - Hospital LiFi System{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="lifi-logo">💡</div>
+            <h1>Create Account</h1>
+            <p class="subtitle">Join the Hospital LiFi Handoff System</p>
+        </div>
+
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email (Optional)</label>
+                <input type="email" id="email" name="email" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Select Role</label>
+                <select id="role" name="role" class="form-control" required>
+                    <option value="">-- Choose Your Role --</option>
+                    <option value="admin">🔐 Hospital Administrator</option>
+                    <option value="asset_manager">🧰 Asset Management Officer</option>
+                    <option value="user">👤 Hospital User</option>
+                </select>
+            </div>
+
+            <div class="role-info" id="role-info">
+                <p><strong>Role Responsibilities:</strong></p>
+                <ul id="role-description"></ul>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <span class="btn-icon">🔒</span>
+                Create Encrypted Account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('role').addEventListener('change', function () {
+        const role = this.value;
+        const infoDiv = document.getElementById('role-info');
+        const descriptionList = document.getElementById('role-description');
+
+        const descriptions = {
+            'admin': [
+                'View hospital-wide asset movement',
+                'Approve user accounts and manage permissions',
+                'Audit all encrypted file transfers',
+                'Monitor LiFi handoff logs',
+                'Manage encryption keys and policies'
+            ],
+            'asset_manager': [
+                'Track real-time hospital assets',
+                'Receive encrypted files from users',
+                'Upload secure asset reports',
+                'Validate optical handoff sessions',
+                'Exchange encrypted messages'
+            ],
+            'user': [
+                'Access assigned assets and files',
+                'Upload encrypted files securely',
+                'Download encrypted files',
+                'Share files with Asset Managers',
+                'Send confidential encrypted messages'
+            ]
+        };
+
+        if (role && descriptions[role]) {
+            descriptionList.innerHTML = descriptions[role].map(item => `<li>${item}</li>`).join('');
+            infoDiv.style.display = 'block';
+        } else {
+            infoDiv.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

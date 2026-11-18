@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}File Reception{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>📥 Encrypted File Reception</h1>
+        <p class="page-subtitle">Receive and decrypt files from Hospital Users</p>
+    </header>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📁 Files Shared With You</h2>
+        </div>
+        <div class="panel-body">
+            {% if files %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>From</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td><strong>{{ file.original_filename }}</strong></td>
+                            <td>
+                                <span class="badge {{ file.uploader_role }}">{{ file.uploader }}</span>
+                            </td>
+                            <td>{{ file.encryption_metadata.file_size|format_file_size }}</td>
+                            <td>{{ file.created_at|time_ago }}</td>
+                            <td>
+                                {% if file.handoff_status == 'failed' %}
+                                <span class="status-badge status-danger">🚫 Rejected</span>
+                                {% else %}
+                                <a href="{{ url_for('download_file', file_id=file.doc_id) }}"
+                                    class="btn btn-sm btn-primary">
+                                    📥 Download (Encrypted)
+                                </a>
+                                <a href="{{ url_for('decrypt_file', file_id=file.doc_id) }}"
+                                    class="btn btn-sm btn-success">
+                                    🔓 Decrypt & Download
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No files shared with you</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

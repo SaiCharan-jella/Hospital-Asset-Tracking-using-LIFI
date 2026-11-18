@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}Pending Approval{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card pending-card">
+        <div class="auth-header">
+            <div class="pending-icon">⏳</div>
+            <h1>Account Pending Approval</h1>
+            <p class="subtitle">Your account is awaiting administrator approval</p>
+        </div>
+
+        <div class="pending-info">
+            <p>Thank you for registering! An administrator will review and approve your account shortly.</p>
+            <p>Once approved, you'll be able to access all features based on your role.</p>
+
+            <div class="status-box">
+                <div class="status-row">
+                    <span class="label">Username:</span>
+                    <span class="value">{{ session.username }}</span>
+                </div>
+                <div class="status-row">
+                    <span class="label">Role:</span>
+                    <span class="value">{{ session.role|role_display }}</span>
+                </div>
+                <div class="status-row">
+                    <span class="label">Status:</span>
+                    <span class="value pending">Pending Approval</span>
+                </div>
+            </div>
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-block">Logout</a>
+    </div>
+</div>
+{% endblock %}

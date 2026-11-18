@@ -1,0 +1,216 @@
+{% extends "layout.html" %}
+
+{% block title %}Routing Performance Comparison{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>🛰️ Routing Protocol Performance</h1>
+                <p class="page-subtitle">Comparative analysis of DSDV (Existing) vs GPSR (Proposed) in Hospital LiFi</p>
+            </div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    </header>
+
+    <!-- Metrics Hero -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value text-success">{{ current.comparison.latency_imp }}</div>
+            <div class="stat-label">Latency Improvement</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-info">{{ current.comparison.throughput_imp }}</div>
+            <div class="stat-label">Throughput increase</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-warning">{{ current.comparison.energy_saving }}</div>
+            <div class="stat-label">Energy Saving</div>
+        </div>
+    </div>
+
+    <!-- Comparison Visualization -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📊 Performance Comparison (Real-time Simulation)</h2>
+        </div>
+        <div class="panel-body">
+            <div class="comparison-grid">
+                <!-- Latency Chart -->
+                <div class="metric-group">
+                    <h3>Latency (ms) - Lower is Better</h3>
+                    <div class="bar-chart">
+                        <div class="bar-container">
+                            <span class="label">DSDV</span>
+                            <div class="bar dsdv" style="width: 100%;">{{ current.dsdv.metrics.latency }} ms</div>
+                        </div>
+                        <div class="bar-container">
+                            <span class="label">GPSR</span>
+                            <div class="bar gpsr"
+                                style="width: {{ (current.gpsr.metrics.latency / current.dsdv.metrics.latency) * 100 }}%;">
+                                {{
+                                current.gpsr.metrics.latency }} ms</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Throughput Chart -->
+                <div class="metric-group">
+                    <h3>Throughput (Mbps) - Higher is Better</h3>
+                    <div class="bar-chart">
+                        <div class="bar-container">
+                            <span class="label">DSDV</span>
+                            <div class="bar dsdv"
+                                style="width: {{ (current.dsdv.metrics.throughput / current.gpsr.metrics.throughput) * 100 }}%;">
+                                {{
+                                current.dsdv.metrics.throughput }} Mbps</div>
+                        </div>
+                        <div class="bar-container">
+                            <span class="label">GPSR</span>
+                            <div class="bar gpsr" style="width: 100%;">{{ current.gpsr.metrics.throughput }} Mbps</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulation History -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📜 Simulation History (Recent Runs)</h2>
+        </div>
+        <div class="panel-body">
+            {% if history %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>DSDV Latency</th>
+                            <th>GPSR Latency</th>
+                            <th>DSDV Throughput</th>
+                            <th>GPSR Throughput</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for run in history %}
+                        <tr>
+                            <td>{{ run.dsdv.metrics.timestamp|datetime_format if run.dsdv.metrics.timestamp else
+                                now_format }}</td>
+                            <td>{{ run.dsdv.metrics.latency }} ms</td>
+                            <td class="text-success">{{ run.gpsr.metrics.latency }} ms</td>
+                            <td>{{ run.dsdv.metrics.throughput }} Mbps</td>
+                            <td class="text-info">{{ run.gpsr.metrics.throughput }} Mbps</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No simulation history available</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .comparison-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .metric-group h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        color: #475569;
+    }
+
+    .bar-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .bar-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .bar-container .label {
+        width: 60px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .bar {
+        height: 32px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        padding: 0 1rem;
+        color: white;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: width 1s ease-in-out;
+    }
+
+    .bar.dsdv {
+        background: #64748b;
+    }
+
+    .bar.gpsr {
+        background: #3b82f6;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .routing-table-comparison {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .panel.half {
+        flex: 1;
+    }
+
+    .dsdv-header {
+        background: #f1f5f9 !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+    }
+
+    .gpsr-header {
+        background: #eff6ff !important;
+        border-bottom: 2px solid #bfdbfe !important;
+    }
+
+    .protocol-note {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 1rem;
+        font-style: italic;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .text-success {
+        color: #10b981;
+    }
+
+    .text-info {
+        color: #3b82f6;
+    }
+
+    .text-warning {
+        color: #f59e0b;
+    }
+</style>
+</div>
+{% endblock %}

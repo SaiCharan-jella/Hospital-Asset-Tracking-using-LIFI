@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block title %}Zone Approvals{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>✅ Zone Activation Approvals</h1>
+                <p class="page-subtitle">Approve or reject optical zone activation requests</p>
+            </div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    </header>
+
+    <!-- Pending Zone Requests -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>⏳ Pending Zone Requests</h2>
+        </div>
+        <div class="panel-body">
+            {% if pending_zones %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Zone Name</th>
+                            <th>Location</th>
+                            <th>Description</th>
+                            <th>Requested By</th>
+                            <th>Requested</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for zone in pending_zones %}
+                        <tr>
+                            <td><strong>{{ zone.name }}</strong></td>
+                            <td>{{ zone.location }}</td>
+                            <td>{{ zone.description }}</td>
+                            <td>{{ zone.requested_by }}</td>
+                            <td>{{ zone.created_at|time_ago }}</td>
+                            <td>
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="zone_id" value="{{ zone.doc_id }}">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success">✓ Approve</button>
+                                </form>
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="zone_id" value="{{ zone.doc_id }}">
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-sm btn-danger">✗ Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No pending zone requests</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- All Zones Overview -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🗺️ All Optical Zones</h2>
+        </div>
+        <div class="panel-body">
+            {% if all_zones %}
+            <div class="zones-grid">
+                {% for zone in all_zones %}
+                <div class="zone-card {{ zone.status }}">
+                    <h3>{{ zone.name }}</h3>
+                    <p><strong>Location:</strong> {{ zone.location }}</p>
+                    <p>{{ zone.description }}</p>
+                    <span class="status-badge status-{{ zone.status }}">{{ zone.status|capitalize }}</span>
+                    {% if zone.approved_by %}
+                    <small>Approved by: {{ zone.approved_by }}</small>
+                    {% endif %}
+                    {% if zone.status == 'active' %}
+                    <form method="POST" style="margin-top: 1rem;">
+                        <input type="hidden" name="zone_id" value="{{ zone.doc_id }}">
+                        <input type="hidden" name="action" value="deactivate">
+                        <button type="submit" class="btn btn-sm btn-warning">⚠️ Deactivate</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-data">No zones created</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .zones-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .zone-card {
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: all 0.3s;
+    }
+
+    .zone-card.active {
+        border-color: #00b894;
+    }
+
+    .zone-card.pending {
+        border-color: #f59e0b;
+    }
+
+    .zone-card.inactive {
+        border-color: #cbd5e1;
+        opacity: 0.7;
+    }
+
+    .zone-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-active {
+        background: #00b894;
+        color: white;
+    }
+
+    .status-pending {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .status-inactive {
+        background: #6c757d;
+        color: white;
+    }
+</style>
+{% endblock %}

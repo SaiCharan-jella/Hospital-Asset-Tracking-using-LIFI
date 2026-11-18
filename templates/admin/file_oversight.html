@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block title %}Secure File Oversight{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>📁 Secure File Oversight</h1>
+        <p class="page-subtitle">Audit all encrypted file transfers</p>
+    </header>
+
+    <!-- File Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>{{ files|length }}</h3>
+                <p>Total Encrypted Files</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">💾</div>
+            <div class="stat-content">
+                <h3>{{ (files|sum(attribute='encryption_metadata.file_size', start=0))|format_file_size }}</h3>
+                <p>Total Storage</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Encrypted Files -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔒 All Encrypted Files</h2>
+            <p>System-wide file overview with encryption metadata</p>
+        </div>
+        <div class="panel-body">
+            {% if files %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>File ID</th>
+                            <th>Original Filename</th>
+                            <th>Uploader</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                            <th>Integrity Hash</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td><code>{{ file.file_id[:8] }}...</code></td>
+                            <td>
+                                <strong>{{ file.original_filename }}</strong>
+                                <br>
+                                <small>Shared with: {{ file.shared_with|join(', ') }}</small>
+                            </td>
+                            <td>
+                                <span class="badge {{ file.uploader_role }}">{{ file.uploader_role|role_display
+                                    }}</span>
+                                <br>
+                                <small>{{ file.uploader }}</small>
+                            </td>
+                            <td>{{ file.encryption_metadata.file_size|format_file_size }}</td>
+                            <td>{{ file.created_at|format_timestamp }}</td>
+                            <td>
+                                <code class="hash-display" title="{{ file.encryption_metadata.integrity_hash }}">
+                                    {{ file.encryption_metadata.integrity_hash[:12] }}...
+                                </code>
+                            </td>
+                            <td>
+                                {% if file.handoff_status == 'failed' %}
+                                <span class="status-badge status-danger">🚫 Handoff Rejected</span>
+                                {% else %}
+                                <a href="{{ url_for('download_file', file_id=file.doc_id) }}"
+                                    class="btn btn-sm btn-secondary">
+                                    📥 Download (Encrypted)
+                                </a>
+                                <a href="{{ url_for('decrypt_file', file_id=file.doc_id) }}"
+                                    class="btn btn-sm btn-success">
+                                    🔓 Decrypt & Download
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No files found</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Encryption Metadata Details -->
+    {% if files %}
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔐 Encryption Metadata</h2>
+            <p>Technical details of encryption implementation</p>
+        </div>
+        <div class="panel-body">
+            <div class="metadata-grid">
+                <div class="metadata-card">
+                    <h4>Encryption Algorithm</h4>
+                    <p><code>{{ files[0].encryption_metadata.algorithm }}</code></p>
+                </div>
+                <div class="metadata-card">
+                    <h4>Key Type</h4>
+                    <p><code>Static Fernet Key</code></p>
+                </div>
+                <div class="metadata-card">
+                    <h4>Integrity Verification</h4>
+                    <p><code>SHA-256 Hash</code></p>
+                </div>
+                <div class="metadata-card">
+                    <h4>Storage Format</h4>
+                    <p><code>Binary Encrypted</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data (may contain account metadata and uploaded files)
+data/hospital.json
+uploads/**
+!uploads/.gitkeep
+celery/**
+!celery/.gitkeep
+
+# Local/editor/OS files
+.DS_Store
+.idea/
+.vscode/
+*.log

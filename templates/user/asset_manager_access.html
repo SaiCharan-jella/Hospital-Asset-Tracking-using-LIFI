@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}Asset Manager File Access{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>🔄 Asset Manager File Access</h1>
+        <p class="page-subtitle">Track files shared with Asset Managers</p>
+    </header>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📤 Files Shared with Asset Managers</h2>
+        </div>
+        <div class="panel-body">
+            {% if files %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                            <th>Handoff Status</th>
+                            <th>Access Logs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td><strong>{{ file.original_filename }}</strong></td>
+                            <td>{{ file.encryption_metadata.file_size|format_file_size }}</td>
+                            <td>{{ file.created_at|time_ago }}</td>
+                            <td>
+                                <span class="status-badge status-success">✓ Handoff Complete</span>
+                            </td>
+                            <td>
+                                {% if file.downloaded_by %}
+                                <details>
+                                    <summary>{{ file.downloaded_by|length }} download(s)</summary>
+                                    <ul class="download-log">
+                                        {% for download in file.downloaded_by %}
+                                        <li>
+                                            <strong>{{ download.username }}</strong> ({{ download.role }})
+                                            <br>
+                                            <small>{{ download.timestamp|format_timestamp }}</small>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </details>
+                                {% else %}
+                                <span class="text-muted">No downloads yet</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No files shared</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

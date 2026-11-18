@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hospital LiFi System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navigation -->
+    {% if session.username %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="lifi-icon">💡</span>
+                <span class="brand-text">Hospital LiFi System</span>
+            </div>
+
+            <div class="nav-links">
+                <span class="nav-user">
+                    <span class="user-badge {{ session.role }}">{{ session.role|role_display }}</span>
+                    <span class="username">{{ session.username }}</span>
+                </span>
+
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('admin_user_control') }}" class="nav-link">User Control</a>
+                <a href="{{ url_for('admin_file_oversight') }}" class="nav-link">Files</a>
+                <a href="{{ url_for('admin_handoff_logs') }}" class="nav-link">Logs</a>
+                <a href="{{ url_for('admin_key_management') }}" class="nav-link">Security</a>
+                {% elif session.role == 'asset_manager' %}
+                <a href="{{ url_for('asset_manager_dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('asset_manager_file_reception') }}" class="nav-link">Receive Files</a>
+                <a href="{{ url_for('asset_manager_reports_upload') }}" class="nav-link">Upload Reports</a>
+                <a href="{{ url_for('asset_manager_handoff_validation') }}" class="nav-link">Validation</a>
+                <a href="{{ url_for('asset_manager_secret_exchange') }}" class="nav-link">Messages</a>
+                {% elif session.role == 'user' %}
+                <a href="{{ url_for('user_dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('user_file_upload') }}" class="nav-link">Upload</a>
+                <a href="{{ url_for('user_file_download') }}" class="nav-link">Downloads</a>
+                <a href="{{ url_for('user_asset_manager_access') }}" class="nav-link">Shared Files</a>
+                <a href="{{ url_for('user_confidential_data') }}" class="nav-link">Messages</a>
+                {% endif %}
+
+                <a href="{{ url_for('logout') }}" class="nav-link logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+        {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">
+            <span class="flash-icon">
+                {% if category == 'success' %}✓{% elif category == 'danger' %}✗{% elif category == 'warning' %}⚠{% else
+                %}ℹ{% endif %}
+            </span>
+            <span class="flash-text">{{ message }}</span>
+            <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Hospital LiFi Handoff System &copy; 2026 | Simulating Stable Optical Handoff</p>
+        <p class="encryption-status">
+            <span class="status-indicator active"></span>
+            Fernet-AES128 Encryption Active
+        </p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

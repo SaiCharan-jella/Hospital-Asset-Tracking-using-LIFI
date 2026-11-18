@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}Login - Hospital LiFi System{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="lifi-logo">💡</div>
+            <h1>Secure Login</h1>
+            <p class="subtitle">Access the LiFi Handoff System</p>
+        </div>
+
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <span class="btn-icon">🔓</span>
+                Login Securely
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up here</a></p>
+        </div>
+
+        <div class="security-badge">
+            <span class="badge-icon">🔐</span>
+            <div class="badge-text">
+                <strong>End-to-End Encryption</strong>
+                <small>All data encrypted with Fernet-AES128</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

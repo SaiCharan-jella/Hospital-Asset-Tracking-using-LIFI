@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}Secure File Upload{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>📤 Secure File Upload</h1>
+        <p class="page-subtitle">Upload files with automatic encryption</p>
+    </header>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔒 Upload & Encrypt</h2>
+        </div>
+        <div class="panel-body">
+            <form method="POST" enctype="multipart/form-data" class="upload-form">
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">📁</div>
+                    <h3>Drop file here or click to browse</h3>
+                    <input type="file" name="file" id="file-input" required>
+                    <p class="upload-hint">Only encrypted version will be stored</p>
+                </div>
+                <div class="encryption-notice">
+                    <span class="notice-icon">🔐</span>
+                    <div>
+                        <strong>Auto-Encryption Enabled</strong>
+                        <p>Your file will be encrypted with Fernet-AES128 before storage</p>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    🔒 Encrypt & Upload
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📋 Upload History</h2>
+        </div>
+        <div class="panel-body">
+            {% if uploads %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                            <th>Handoff Session</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in uploads %}
+                        <tr>
+                            <td><strong>{{ file.original_filename }}</strong></td>
+                            <td>{{ file.encryption_metadata.file_size|format_file_size }}</td>
+                            <td>{{ file.created_at|time_ago }}</td>
+                            <td><code>{{ file.handoff_session_id[:20] }}...</code></td>
+                            <td><span class="status-badge status-success">✓ Encrypted & Stored</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No uploads yet</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

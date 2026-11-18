@@ -1,0 +1,176 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>🔐 Hospital Administrator Dashboard</h1>
+                <p class="page-subtitle">Monitor hospital-wide optical handoff operations</p>
+            </div>
+            <div class="header-actions" style="display: flex; gap: 0.5rem;">
+                <a href="{{ url_for('admin_routing_performance') }}" class="btn btn-info">🛰️ Routing Comparison</a>
+                <a href="{{ url_for('admin_zone_approvals') }}" class="btn btn-primary">✅ Manage Approvals</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon users">👥</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_users }}</h3>
+                <p>Total Users</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon pending">⏳</div>
+            <div class="stat-content">
+                <h3>{{ stats.pending_users }}</h3>
+                <p>Pending Approval</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon assets">🏥</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_assets }}</h3>
+                <p>Hospital Assets</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon files">📁</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_files }}</h3>
+                <p>Encrypted Files</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon handoffs">💡</div>
+            <div class="stat-content">
+                <h3>{{ stats.active_handoffs }}</h3>
+                <p>Active Handoffs</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon secrets">🔒</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_secrets }}</h3>
+                <p>Secure Messages</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- LiFi Handoff Map -->
+    <div class="panel">
+        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2>💡 LiFi Optical Handoff Map</h2>
+                <p>Real-time visualization of optical zones and data flow</p>
+            </div>
+            <a href="{{ url_for('admin_zone_approvals') }}" class="btn btn-primary">✅ Manage Approvals</a>
+        </div>
+        <div class="panel-body">
+            <div class="optical-map">
+                {% for zone in optical_zones %}
+                <div class="optical-zone {% if zone.status == 'active' %}active{% else %}inactive{% endif %}"
+                    style="border-color: {{ zone.name|zone_color }};">
+                    <div class="zone-header" style="background: {{ zone.name|zone_color }}20;">
+                        <span class="zone-name">{{ zone.name }}</span>
+                        <span class="zone-status {{ zone.status }}">{{ zone.status|replace('_', ' ')|title }}</span>
+                    </div>
+                    <div class="zone-content">
+                        <div class="zone-indicator">
+                            <div class="light-beam"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Handoff Sessions -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔄 Active Handoff Sessions</h2>
+            <p>Ongoing optical data transfers</p>
+        </div>
+        <div class="panel-body">
+            {% if active_sessions %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Session ID</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Status</th>
+                            <th>Integrity</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in active_sessions[:10] %}
+                        <tr>
+                            <td><code>{{ session.session_id }}</code></td>
+                            <td><span class="badge {{ session.from_role }}">{{ session.from_role|role_display }}</span>
+                            </td>
+                            <td><span class="badge {{ session.to_role }}">{{ session.to_role }}</span></td>
+                            <td><span class="status-badge {{ session.status|status_class }}">{{ session.status }}</span>
+                            </td>
+                            <td>
+                                {% if session.integrity_verified %}
+                                <span class="integrity-check verified">✓ Verified</span>
+                                {% else %}
+                                <span class="integrity-check failed">✗ Failed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ session.timestamp|time_ago }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No active handoff sessions</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Asset Movement -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📦 Hospital Asset Movement</h2>
+            <p>Track assets across optical zones</p>
+        </div>
+        <div class="panel-body">
+            {% if assets %}
+            <div class="asset-grid">
+                {% for asset in assets[:12] %}
+                <div class="asset-card">
+                    <div class="asset-icon">📦</div>
+                    <h4>{{ asset.name or 'Asset ' ~ asset.doc_id }}</h4>
+                    <p class="asset-location">{{ asset.location or 'Unassigned' }}</p>
+                    <span class="asset-status">{{ asset.status_encrypted or 'Available' }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-data">No assets registered</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/lifi_visualization.js') }}"></script>
+{% endblock %}

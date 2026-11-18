@@ -1,0 +1,198 @@
+{% extends "layout.html" %}
+
+{% block title %}Key & Policy Management{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="page-header">
+        <h1>🔑 Key & Policy Management</h1>
+        <p class="page-subtitle">Manage encryption keys and access policies</p>
+    </header>
+
+    <!-- Static Encryption Key -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔐 Static Fernet Encryption Key</h2>
+            <p>The encryption key is loaded from environment configuration and is never displayed here.</p>
+        </div>
+        <div class="panel-body">
+            <div class="key-display-section">
+                <div class="key-info-box">
+                    <h4>Masked Key:</h4>
+                    <code class="key-display masked">{{ masked_key }}</code>
+                </div>
+
+                <div class="key-info-box">
+                    <h4>Configured Key:</h4>
+                    <code class="key-display masked">{{ masked_key }}</code>
+                </div>
+
+                <div class="key-warning">
+                    <span class="warning-icon">⚠</span>
+                    <div>
+                        <strong>Security Notice:</strong>
+                        <p>This prototype loads the key from local environment configuration. Keep it private and use
+                            managed secret storage for any deployment.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-properties">
+                <h4>Key Properties:</h4>
+                <table class="properties-table">
+                    <tr>
+                        <td><strong>Algorithm:</strong></td>
+                        <td>Fernet (AES-128 CBC + HMAC)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Key Length:</strong></td>
+                        <td>32 bytes (256 bits)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rotation:</strong></td>
+                        <td>Disabled (Static Key)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Storage:</strong></td>
+                        <td>Environment variable / local .env</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Access Permissions -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>🔒 Role-Based Access Permissions</h2>
+            <p>Configure access policies (not key rotation)</p>
+        </div>
+        <div class="panel-body">
+            <div class="permissions-grid">
+                {% for role_key, role_name in roles.items() %}
+                <div class="permission-card">
+                    <div class="permission-header {{ role_key }}">
+                        <h3>{{ role_name }}</h3>
+                        <span class="role-badge">{{ role_key }}</span>
+                    </div>
+                    <div class="permission-list">
+                        {% if role_key == 'admin' %}
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>View All Files</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Decrypt All Files</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Approve Users</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Manage Permissions</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>View All Logs</span>
+                        </div>
+                        {% elif role_key == 'asset_manager' %}
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Manage Assets</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Upload Files</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Download Shared Files</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Validate Handoffs</span>
+                        </div>
+                        <div class="permission-item denied">
+                            <span class="perm-icon">✗</span>
+                            <span>Decrypt All Files</span>
+                        </div>
+                        {% else %}
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Upload Files</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>Download Own Files</span>
+                        </div>
+                        <div class="permission-item granted">
+                            <span class="perm-icon">✓</span>
+                            <span>View Assets</span>
+                        </div>
+                        <div class="permission-item denied">
+                            <span class="perm-icon">✗</span>
+                            <span>Manage Assets</span>
+                        </div>
+                        <div class="permission-item denied">
+                            <span class="perm-icon">✗</span>
+                            <span>View All Logs</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Rules -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2>📜 Compliance & Policy Rules</h2>
+            <p>System-wide encryption and security policies</p>
+        </div>
+        <div class="panel-body">
+            <div class="compliance-list">
+                <div class="compliance-rule active">
+                    <span class="rule-icon">✓</span>
+                    <div class="rule-content">
+                        <h4>All Files Encrypted at Rest</h4>
+                        <p>Files are encrypted before storage; originals are deleted</p>
+                    </div>
+                </div>
+                <div class="compliance-rule active">
+                    <span class="rule-icon">✓</span>
+                    <div class="rule-content">
+                        <h4>Integrity Verification Required</h4>
+                        <p>SHA-256 hash verification for all encrypted files</p>
+                    </div>
+                </div>
+                <div class="compliance-rule active">
+                    <span class="rule-icon">✓</span>
+                    <div class="rule-content">
+                        <h4>Role-Based Access Control</h4>
+                        <p>Access granted based on user role and permissions</p>
+                    </div>
+                </div>
+                <div class="compliance-rule active">
+                    <span class="rule-icon">✓</span>
+                    <div class="rule-content">
+                        <h4>Handoff Session Logging</h4>
+                        <p>All file transfers logged with timestamps and integrity status</p>
+                    </div>
+                </div>
+                <div class="compliance-rule disabled">
+                    <span class="rule-icon">✗</span>
+                    <div class="rule-content">
+                        <h4>Key Rotation</h4>
+                        <p>Disabled - Static key per requirements</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
